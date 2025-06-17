@@ -9,3 +9,4 @@ def display_tracking_info(data: dict) -> None:
   print(f"Status: {data.get('status')}")
   print(f"Estimated Delivery: {data.get('estimated_delivery')}")
   print(f"Current Location: {data.get('current_location')}")
+
