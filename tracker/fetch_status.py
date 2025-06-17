@@ -6,71 +6,69 @@ import requests
 
 @log_function_call()
 def fetch_status(carrier: Carrier, tracking_number: str) -> dict | None:
-  match (carrier):
-    case Carrier.UPS:
-      return fetch_ups_status(tracking_number)
-    case Carrier.FEDEX:
-      return fetch_fedex_status(tracking_number)
-    case Carrier.USPS:
-      return fetch_usps_status(tracking_number)
-    case Carrier.DHL:
-      return fetch_dhl_status(tracking_number)
-    case Carrier.AMAZON:
-      return fetch_amazon_status(tracking_number)
-    case _:
-      print(f"[ERROR] Unsupported carrier: {carrier}")
-      return None   
+    if carrier == Carrier.UPS:
+        return fetch_ups_status(tracking_number)
+    if carrier == Carrier.FEDEX:
+        return fetch_fedex_status(tracking_number)
+    if carrier == Carrier.USPS:
+        return fetch_usps_status(tracking_number)
+    if carrier == Carrier.DHL:
+        return fetch_dhl_status(tracking_number)
+    if carrier == Carrier.AMAZON:
+        return fetch_amazon_status(tracking_number)
+    log(f"Unsupported carrier: {carrier}", LogLevel.ERROR)
+    return None
+
+
+def _parse_response(data: dict) -> dict | None:
+    if not isinstance(data, dict):
+        return None
+    return {
+        "status": data.get("status"),
+        "estimated_delivery": data.get("estimated_delivery"),
+        "current_location": data.get("current_location"),
+    }
+
 
 @log_function_call()
 def fetch_ups_status(tracking_number: str) -> dict:
-  """Fetch tracking information from UPS using OAuth."""
-  print(f"[DEBUG] Fetching status for UPS tracking #: {tracking_number}")
-  token = get_oauth_token()
-  headers = {"Authorization": f"Bearer {token}"}
-  url = f"https://wwwcie.ups.com/track/v1/details/{tracking_number}"
-  response = requests.get(url, headers=headers)
-  response.raise_for_status()
-  return response.json()
-  
-@log_function_call()
-def fetch_fedex_status(tracking_number: str) -> dict:
-  # Simulated API call to FedEx tracking service
-  print(f"[DEBUG] Fetching status for FedEx tracking #: {tracking_number}")
-  return {
-    "status": "In Transit",
-    "estimated_delivery": "2025-06-06",
-    "current_location": "Chicago, IL"
-  }
+    """Fetch tracking information from UPS using OAuth."""
+    print(f"[DEBUG] Fetching status for UPS tracking #: {tracking_number}")
+    token = get_oauth_token()
+    headers = {"Authorization": f"Bearer {token}"}
+    url = f"https://wwwcie.ups.com/track/v1/details/{tracking_number}"
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    return response.json()
+
 
 @log_function_call()
-def fetch_usps_status(tracking_number: str) -> dict:
-  # Simulated API call to USPS tracking service
-  print(f"[DEBUG] Fetching status for USPS tracking #: {tracking_number}")
-  return {
-    "status": "Out for Delivery",
-    "estimated_delivery": "2025-06-05",
-    "current_location": "New York, NY"
-  }
+def fetch_fedex_status(tracking_number: str) -> dict | None:
+    url = f"https://api.fedex.com/track/v1/{tracking_number}"
+    params = {"token": os.getenv("FEDEX_API_KEY")}
+    data = get_json(url, params=params)
+    return _parse_response(data)
+
 
 @log_function_call()
-def fetch_dhl_status(tracking_number: str) -> dict:
-  # Simulated API call to DHL tracking service
-  print(f"[DEBUG] Fetching status for DHL tracking #: {tracking_number}")
-  return {
-    "status": "Delivered",
-    "estimated_delivery": "2025-06-04",
-    "current_location": "San Francisco, CA"
-  }
+def fetch_usps_status(tracking_number: str) -> dict | None:
+    url = f"https://api.usps.com/track/v1/{tracking_number}"
+    params = {"api_key": os.getenv("USPS_API_KEY")}
+    data = get_json(url, params=params)
+    return _parse_response(data)
+
 
 @log_function_call()
-def fetch_amazon_status(tracking_number: str) -> dict:
-  # Simulated API call to Amazon tracking service
-  print(f"[DEBUG] Fetching status for Amazon tracking #: {tracking_number}")
-  return {
-    "status": "Shipped",
-    "estimated_delivery": "2025-06-07",
-    "current_location": "Seattle, WA"
-  }
+def fetch_dhl_status(tracking_number: str) -> dict | None:
+    url = f"https://api.dhl.com/track/shipments/{tracking_number}"
+    params = {"api_key": os.getenv("DHL_API_KEY")}
+    data = get_json(url, params=params)
+    return _parse_response(data)
 
-# Note: In a real implementation, these functions would make HTTP requests to the respective carrier's API
-# and handle any errors or exceptions that may occur.
+
+@log_function_call()
+def fetch_amazon_status(tracking_number: str) -> dict | None:
+    url = f"https://api.amazon.com/track/v1/packages/{tracking_number}"
+    params = {"access_token": os.getenv("AMAZON_API_KEY")}
+    data = get_json(url, params=params)
+    return _parse_response(data)
