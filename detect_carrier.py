@@ -4,10 +4,10 @@ from tracker.logging import log_function_call
 
 @log_function_call()
 def detect_carrier(tracking_number: str) -> Carrier:
-  tracking_number = tracking_number.strip()
+  tracking_number = tracking_number.lower().strip()
 
   # UPS: starts with 1Z
-  if tracking_number.startswith("1Z"):
+  if tracking_number.startswith("1z"):
     return Carrier.UPS
 
   # FedEx: often 12–14 digit numbers
@@ -17,6 +17,7 @@ def detect_carrier(tracking_number: str) -> Carrier:
   # DHL: usually starts with 3S, JJD, or similar
   if re.fullmatch(r"(3S|JJD)\d{10,20}", tracking_number):
     return Carrier.DHL
+  
   # Amazon: usually starts with TBA
   if tracking_number.startswith("TBA"):
     return Carrier.AMAZON
