@@ -1,6 +1,8 @@
 from enum import Enum
 from tracker.carriers import Carrier
 from tracker.logging import log_function_call
+from tracker.http_client import get_oauth_token
+import requests
 
 @log_function_call()
 def fetch_status(carrier: Carrier, tracking_number: str) -> dict | None:
@@ -21,14 +23,14 @@ def fetch_status(carrier: Carrier, tracking_number: str) -> dict | None:
 
 @log_function_call()
 def fetch_ups_status(tracking_number: str) -> dict:
-  # Simulated API call to UPS tracking service
+  """Fetch tracking information from UPS using OAuth."""
   print(f"[DEBUG] Fetching status for UPS tracking #: {tracking_number}")
- 
-  return {
-    "status": "Delivered",
-    "estimated_delivery": "2025-06-05",
-    "current_location": "Los Angeles, CA"
-  }
+  token = get_oauth_token()
+  headers = {"Authorization": f"Bearer {token}"}
+  url = f"https://wwwcie.ups.com/track/v1/details/{tracking_number}"
+  response = requests.get(url, headers=headers)
+  response.raise_for_status()
+  return response.json()
   
 @log_function_call()
 def fetch_fedex_status(tracking_number: str) -> dict:
