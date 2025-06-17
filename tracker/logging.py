@@ -36,4 +36,3 @@ def log_function_call(level: LogLevel = LogLevel.DEBUG):
         return wrapper
 
     return decorator
-

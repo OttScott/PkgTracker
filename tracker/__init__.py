@@ -1,3 +1,7 @@
+"""Tracker package."""
+
+__all__ = []
+
 from .carriers import Carrier
 from .detect_carrier import detect_carrier
 from .fetch_status import fetch_status

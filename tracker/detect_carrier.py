@@ -1,4 +1,5 @@
 import re
+
 from .carriers import Carrier
 from .logging import log_function_call
 
@@ -27,4 +28,3 @@ def detect_carrier(tracking_number: str) -> Carrier:
         return Carrier.USPS
 
     return Carrier.UNKNOWN
-

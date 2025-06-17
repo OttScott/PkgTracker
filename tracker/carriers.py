@@ -7,4 +7,3 @@ class Carrier(Enum):
     DHL = "DHL"
     AMAZON = "Amazon"
     UNKNOWN = "Unknown"
-

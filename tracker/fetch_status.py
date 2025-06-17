@@ -1,7 +1,8 @@
-import os
-from .carriers import Carrier
-from .http_client import get_json
-from .logging import log_function_call, log, LogLevel
+from enum import Enum
+from tracker.carriers import Carrier
+from tracker.logging import log_function_call
+from tracker.http_client import get_oauth_token
+import requests
 
 @log_function_call()
 def fetch_status(carrier: Carrier, tracking_number: str) -> dict | None:
@@ -30,11 +31,15 @@ def _parse_response(data: dict) -> dict | None:
 
 
 @log_function_call()
-def fetch_ups_status(tracking_number: str) -> dict | None:
-    url = f"https://api.ups.com/track/v1/details/{tracking_number}"
-    params = {"access_key": os.getenv("UPS_API_KEY")}
-    data = get_json(url, params=params)
-    return _parse_response(data)
+def fetch_ups_status(tracking_number: str) -> dict:
+    """Fetch tracking information from UPS using OAuth."""
+    print(f"[DEBUG] Fetching status for UPS tracking #: {tracking_number}")
+    token = get_oauth_token()
+    headers = {"Authorization": f"Bearer {token}"}
+    url = f"https://wwwcie.ups.com/track/v1/details/{tracking_number}"
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    return response.json()
 
 
 @log_function_call()
@@ -67,4 +72,3 @@ def fetch_amazon_status(tracking_number: str) -> dict | None:
     params = {"access_token": os.getenv("AMAZON_API_KEY")}
     data = get_json(url, params=params)
     return _parse_response(data)
-
