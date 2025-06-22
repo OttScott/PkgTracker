@@ -13,6 +13,7 @@ A simple command-line tool to track packages from major carriers using just the 
 ## Setup
 
 1. Install the required dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
@@ -20,11 +21,35 @@ A simple command-line tool to track packages from major carriers using just the 
 2. Set up your API credentials:
    - Copy `.env.example` to `.env`
    - Fill in your API keys for the various carriers
-   
+
    ```bash
    cp .env.example .env
    # Edit .env file with your API credentials
    ```
+
+## API Usage
+
+You can use the package tracker in your own Python scripts:
+
+```python
+from tracker.carriers import Carrier
+from tracker.detect_carrier import detect_carrier
+from tracker.fetch_status import fetch_status
+from tracker.display import display_tracking_info
+
+# Example tracking number
+tracking_number = "1Z999AA10123456784"
+
+# Auto-detect the carrier
+carrier = detect_carrier(tracking_number)
+print(f"Detected carrier: {carrier.value}")
+
+# Fetch the package tracking status
+tracking_info = fetch_status(carrier, tracking_number)
+
+# Display the tracking information
+display_tracking_info(tracking_info)
+```
 
 ### Obtaining API Credentials
 
